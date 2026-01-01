@@ -37,7 +37,6 @@ export function ReviewsFilter({ reviews, categories }: ReviewsFilterProps) {
   const router = useRouter()
 
   const [selectedCategory, setSelectedCategory] = useState<string>("all")
-  const [sortBy, setSortBy] = useState<string>("date")
   const [searchQuery, setSearchQuery] = useState<string>("")
 
   // Initialize from URL params
@@ -108,21 +107,7 @@ export function ReviewsFilter({ reviews, categories }: ReviewsFilterProps) {
 
   return (
     <>
-      {/* Search Bar */}
-      <div className="mb-6">
-        <div className="relative max-w-2xl">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-          <Input
-            type="search"
-            placeholder="Search products by name, brand, or description..."
-            value={searchQuery}
-            onChange={(e) => handleSearchChange(e.target.value)}
-            className="pl-12 h-12 text-base"
-          />
-        </div>
-      </div>
-
-      {/* Filter and Sort Section */}
+      {/* Filter and Search Section */}
       <div className="border-2 border-border rounded-xl p-6 mb-8">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
           <div className="flex flex-col gap-3 w-full md:w-auto">
@@ -141,16 +126,17 @@ export function ReviewsFilter({ reviews, categories }: ReviewsFilterProps) {
             </div>
           </div>
 
-          <div className="flex flex-col gap-3 w-full md:w-auto">
-            <p className="text-sm font-medium text-foreground">Sort by</p>
-            <div className="flex gap-2">
-              <Button
-                variant="default"
-                size="sm"
-                disabled
-              >
-                Newest
-              </Button>
+          <div className="flex flex-col gap-3 w-full md:w-auto md:min-w-[320px]">
+            <p className="text-sm font-medium text-foreground">Search Products</p>
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                type="search"
+                placeholder="Search by name, brand..."
+                value={searchQuery}
+                onChange={(e) => handleSearchChange(e.target.value)}
+                className="pl-9 h-9 text-sm"
+              />
             </div>
           </div>
         </div>
