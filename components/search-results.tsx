@@ -105,6 +105,33 @@ export function SearchResults({ allReviews, allGuides }: SearchResultsProps) {
           {/* Search Results */}
           {totalResults > 0 && (
             <div className="space-y-12">
+              {/* Review Results */}
+              {reviewResults.length > 0 && (
+                <div>
+                  <h2 className="text-2xl font-bold text-foreground mb-6 flex items-center gap-2">
+                    <Search className="h-6 w-6 text-primary" />
+                    Product Reviews ({reviewResults.length})
+                  </h2>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {reviewResults.map((review) => (
+                      <ProductCard
+                        key={review.slug}
+                        title={review.frontmatter.title}
+                        image={review.frontmatter.image || "/placeholder.svg"}
+                        rating={review.frontmatter.rating || 4.5}
+                        reviewCount={0}
+                        price=""
+                        summary={review.frontmatter.description}
+                        amazonUrl={review.frontmatter.amazonUrl || "#"}
+                        asin={review.frontmatter.asin}
+                        slug={review.slug}
+                        linkType="review"
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
+
               {/* Guides Results */}
               {guideResults.length > 0 && (
                 <div>
@@ -134,33 +161,6 @@ export function SearchResults({ allReviews, allGuides }: SearchResultsProps) {
                           </div>
                         </CardContent>
                       </Card>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Review Results */}
-              {reviewResults.length > 0 && (
-                <div>
-                  <h2 className="text-2xl font-bold text-foreground mb-6 flex items-center gap-2">
-                    <Search className="h-6 w-6 text-primary" />
-                    Product Reviews ({reviewResults.length})
-                  </h2>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {reviewResults.map((review) => (
-                      <ProductCard
-                        key={review.slug}
-                        title={review.frontmatter.title}
-                        image={review.frontmatter.image || "/placeholder.svg"}
-                        rating={review.frontmatter.rating || 4.5}
-                        reviewCount={0}
-                        price=""
-                        summary={review.frontmatter.description}
-                        amazonUrl={review.frontmatter.amazonUrl || "#"}
-                        asin={review.frontmatter.asin}
-                        slug={review.slug}
-                        linkType="review"
-                      />
                     ))}
                   </div>
                 </div>
