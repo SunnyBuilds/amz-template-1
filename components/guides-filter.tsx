@@ -21,50 +21,67 @@ export function GuidesFilter({ guides, categories }: GuidesFilterProps) {
   
   const [selectedCategory, setSelectedCategory] = useState<string>("all")
   const [searchQuery, setSearchQuery] = useState("")
-  const [filteredGuides, setFilteredGuides] = useState(guides)
 
-  // Read initial category from URL
+  // Read initial category and search from URL
   useEffect(() => {
     const categoryParam = searchParams.get("category")
+    const searchParam = searchParams.get("search")
+
     if (categoryParam && categories.includes(categoryParam)) {
       setSelectedCategory(categoryParam)
     } else {
       setSelectedCategory("all")
     }
+
+    if (searchParam) {
+      setSearchQuery(searchParam)
+    }
   }, [searchParams, categories])
 
   // Filter guides based on category and search
-  useEffect(() => {
-    let result = guides
+  let filteredGuides = guides
 
-    // Category filter
-    if (selectedCategory !== "all") {
-      result = result.filter((guide) => guide.frontmatter.category === selectedCategory)
-    }
+  // Category filter
+  if (selectedCategory !== "all") {
+    filteredGuides = filteredGuides.filter((guide) => guide.frontmatter.category === selectedCategory)
+  }
 
-    // Search filter
-    if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase()
-      result = result.filter(
-        (guide) =>
-          guide.frontmatter.title.toLowerCase().includes(query) ||
-          guide.frontmatter.description.toLowerCase().includes(query) ||
-          guide.frontmatter.category.toLowerCase().includes(query) ||
-          (guide.frontmatter.tags && guide.frontmatter.tags.some((tag) => tag.toLowerCase().includes(query)))
-      )
-    }
-
-    setFilteredGuides(result)
-  }, [selectedCategory, searchQuery, guides])
+  // Search filter
+  if (searchQuery.trim()) {
+    const query = searchQuery.toLowerCase()
+    filteredGuides = filteredGuides.filter(
+      (guide) =>
+        guide.frontmatter.title.toLowerCase().includes(query) ||
+        guide.frontmatter.description.toLowerCase().includes(query) ||
+        guide.frontmatter.category.toLowerCase().includes(query) ||
+        (guide.frontmatter.tags && guide.frontmatter.tags.some((tag) => tag.toLowerCase().includes(query)))
+    )
+  }
 
   // Update URL when category changes
   const handleCategoryChange = (category: string) => {
     setSelectedCategory(category)
+    const params = new URLSearchParams(searchParams.toString())
     if (category === "all") {
-      router.push("/guides")
+      params.delete("category")
     } else {
-      router.push(`/guides?category=${encodeURIComponent(category)}`)
+      params.set("category", encodeURIComponent(category))
     }
+    const newUrl = params.toString() ? `/guides?${params.toString()}` : "/guides"
+    router.push(newUrl, { scroll: false })
+  }
+
+  // Update URL when search query changes
+  const handleSearchChange = (value: string) => {
+    setSearchQuery(value)
+    const params = new URLSearchParams(searchParams.toString())
+    if (value.trim()) {
+      params.set("search", value)
+    } else {
+      params.delete("search")
+    }
+    const newUrl = params.toString() ? `/guides?${params.toString()}` : "/guides"
+    router.push(newUrl, { scroll: false })
   }
 
   return (
@@ -77,7 +94,7 @@ export function GuidesFilter({ guides, categories }: GuidesFilterProps) {
             type="search"
             placeholder="Search guides..."
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(e) => handleSearchChange(e.target.value)}
             className="pl-10 w-full"
           />
         </div>
@@ -158,7 +175,12 @@ export function GuidesFilter({ guides, categories }: GuidesFilterProps) {
       ) : (
         <div className="text-center py-12">
           <p className="text-lg text-muted-foreground mb-4">No guides found matching your criteria.</p>
-          <Button onClick={() => { setSearchQuery(""); setSelectedCategory("all") }}>Clear Filters</Button>
+          <Button onClick={() => {
+            handleSearchChange("");
+            handleCategoryChange("all");
+          }}>
+            Clear Filters
+          </Button>
         </div>
       )}
     </div>
