@@ -52,8 +52,7 @@ content:
         label: Status
         type: select
         options:
-          - published
-          - draft
+          values: ['published', 'draft']
 
   - name: guides
     label: Camping Guides
@@ -91,5 +90,4 @@ content:
         label: Status
         type: select
         options:
-          - published
-          - draft
+          values: ['published', 'draft']
