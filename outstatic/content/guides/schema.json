@@ -1,0 +1,42 @@
+{
+  "title": "Guides",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "title": "Title"
+    },
+    "date": {
+      "type": "string",
+      "format": "date",
+      "title": "Publish Date"
+    },
+    "description": {
+      "type": "string",
+      "title": "Description"
+    },
+    "category": {
+      "type": "string",
+      "title": "Category"
+    },
+    "tags": {
+      "type": "array",
+      "items": { "type": "string" },
+      "title": "Tags"
+    },
+    "image": {
+      "type": "string",
+      "title": "Cover Image URL"
+    },
+    "readTime": {
+      "type": "string",
+      "title": "Read Time"
+    },
+    "updatedDate": {
+      "type": "string",
+      "format": "date",
+      "title": "Updated Date"
+    }
+  },
+  "required": ["title", "date", "description", "category"]
+}

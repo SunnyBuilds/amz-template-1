@@ -1,10 +1,10 @@
-import { getAllReviewsWithDirectus } from "@/lib/api"
+import { getAllReviewsUnified } from "@/lib/api"
 import { getAllCategories } from "@/lib/products-data"
 import { ReviewsFilter } from "@/components/reviews-filter"
 import { siteConfig } from "@/lib/site.config"
 
 export default async function ReviewsPage() {
-  const allReviews = await getAllReviewsWithDirectus()
+  const allReviews = await getAllReviewsUnified()
   const allCategories = getAllCategories()
 
   const categories = [

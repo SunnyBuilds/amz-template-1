@@ -1,6 +1,6 @@
 import type { Metadata } from "next"
 import Link from "next/link"
-import { getAllGuides, getGuideCategories } from "@/lib/api"
+import { getAllGuidesUnified } from "@/lib/api"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -30,8 +30,8 @@ export const metadata: Metadata = {
   },
 }
 
-export default function GuidesPage() {
-  const guides = getAllGuides()
+export default async function GuidesPage() {
+  const guides = await getAllGuidesUnified()
 
   // 从配置文件获取页面文案和分类
   const pageTitle = siteConfig.pages.guides.title

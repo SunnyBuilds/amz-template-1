@@ -8,14 +8,14 @@ import { Separator } from "@/components/ui/separator"
 import { Calendar, Clock, User } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
-import { getReviewBySlug, getAllReviews } from "@/lib/api"
+import { getReviewBySlugUnified, getAllReviewsUnified } from "@/lib/api"
 import { ReviewSidebar } from "@/components/review-sidebar"
 import { BreadcrumbNav } from "@/components/breadcrumb-nav"
 import { TableOfContents } from "@/components/table-of-contents"
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params
-  const review = getReviewBySlug(slug)
+  const review = getReviewBySlugUnified(slug)
 
   if (!review) {
     return {
@@ -89,12 +89,12 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 }
 
 export async function generateStaticParams() {
-  const reviews = getAllReviews()
-  
+  const reviews = await getAllReviewsUnified()
+
   if (!reviews || !Array.isArray(reviews)) {
     return []
   }
-  
+
   return reviews.map((review) => ({
     slug: review.slug,
   }))
@@ -102,7 +102,7 @@ export async function generateStaticParams() {
 
 export default async function ReviewArticlePage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
-  const review = getReviewBySlug(slug)
+  const review = getReviewBySlugUnified(slug)
 
   if (!review) {
     notFound()
@@ -112,7 +112,7 @@ export default async function ReviewArticlePage({ params }: { params: Promise<{ 
   const image = frontmatter.image || "/placeholder.svg"
   
   // Get related products from MDX reviews (same category, excluding current)
-  const allReviews = getAllReviews()
+  const allReviews = await getAllReviewsUnified()
   const relatedProducts = allReviews
     .filter((reviewItem) =>
       reviewItem.frontmatter.category === frontmatter.category &&

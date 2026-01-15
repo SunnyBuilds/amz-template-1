@@ -2,7 +2,7 @@ import { notFound } from "next/navigation"
 import type { Metadata } from "next"
 import Link from "next/link"
 import Image from "next/image"
-import { getGuideBySlug, getAllGuides } from "@/lib/api"
+import { getGuideBySlugUnified, getAllGuidesUnified } from "@/lib/api"
 import { MDXRemote } from "next-mdx-remote/rsc"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
@@ -18,7 +18,7 @@ interface PageProps {
 }
 
 export async function generateStaticParams() {
-  const guides = getAllGuides()
+  const guides = await getAllGuidesUnified()
   return guides.map((guide) => ({
     slug: guide.slug,
   }))
@@ -26,7 +26,7 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params
-  const guide = getGuideBySlug(slug)
+  const guide = getGuideBySlugUnified(slug)
 
   if (!guide) {
     return {
@@ -99,14 +99,14 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default async function GuidePage({ params }: PageProps) {
   const { slug } = await params
-  const guide = getGuideBySlug(slug)
+  const guide = getGuideBySlugUnified(slug)
 
   if (!guide) {
     notFound()
   }
 
   // Get related guides from the same category for bottom section
-  const allGuides = getAllGuides()
+  const allGuides = await getAllGuidesUnified()
   const relatedGuides = allGuides
     .filter((g) => g.frontmatter.category === guide.frontmatter.category && g.slug !== slug)
     .slice(0, 3)
