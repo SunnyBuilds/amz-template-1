@@ -55,6 +55,9 @@ content:
         type: select
         options:
           values: ['published', 'draft']
+      - name: body
+        label: Content
+        type: rich-text
 
   - name: guides
     label: Camping Guides
@@ -93,3 +96,6 @@ content:
         type: select
         options:
           values: ['published', 'draft']
+      - name: body
+        label: Content
+        type: rich-text
