@@ -1,0 +1,95 @@
+media:
+  input: public/images
+  output: /images
+
+content:
+  - name: reviews
+    label: Product Reviews
+    path: outstatic/content/reviews
+    type: collection
+    fields:
+      - name: title
+        label: Title
+        type: string
+        required: true
+      - name: date
+        label: Date
+        type: date
+        required: true
+      - name: description
+        label: Description
+        type: text
+      - name: asin
+        label: Amazon ASIN
+        type: string
+      - name: brand
+        label: Brand
+        type: string
+      - name: category
+        label: Category
+        type: string
+      - name: rating
+        label: Rating
+        type: number
+      - name: image
+        label: Image URL
+        type: string
+      - name: amazonUrl
+        label: Amazon URL
+        type: string
+      - name: pros
+        label: Pros
+        type: string
+        list: true
+      - name: cons
+        label: Cons
+        type: string
+        list: true
+      - name: author
+        label: Author
+        type: string
+      - name: status
+        label: Status
+        type: select
+        options:
+          - published
+          - draft
+
+  - name: guides
+    label: Camping Guides
+    path: outstatic/content/guides
+    type: collection
+    fields:
+      - name: title
+        label: Title
+        type: string
+        required: true
+      - name: date
+        label: Date
+        type: date
+        required: true
+      - name: description
+        label: Description
+        type: text
+      - name: category
+        label: Category
+        type: string
+      - name: tags
+        label: Tags
+        type: string
+        list: true
+      - name: image
+        label: Image URL
+        type: string
+      - name: readTime
+        label: Read Time
+        type: string
+      - name: author
+        label: Author
+        type: string
+      - name: status
+        label: Status
+        type: select
+        options:
+          - published
+          - draft
