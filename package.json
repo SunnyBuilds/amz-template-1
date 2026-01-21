@@ -5,11 +5,11 @@
   "scripts": {
     "build": "next build",
     "dev": "next dev -H 127.0.0.1 -p 8080",
-    "dev:cms": "cross-env OUTSTATIC_CMS_MODE=true next dev -H 127.0.0.1 -p 8080",
     "lint": "eslint .",
+    "publish:posts": "node scripts/publish-posts.js",
+    "sync:site-config": "node scripts/sync-site-config.js",
     "start": "next start",
-    "update-images": "tsx scripts/update-images-from-csv.ts",
-    "migrate:outstatic": "tsx scripts/migrate-to-outstatic.ts"
+    "update-images": "tsx scripts/update-images-from-csv.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
@@ -53,7 +53,6 @@
     "next": "15.3.3",
     "next-mdx-remote": "^5.0.0",
     "next-themes": "^0.4.6",
-    "outstatic": "^2.0.14",
     "react": "19.2.0",
     "react-day-picker": "9.8.0",
     "react-dom": "19.2.0",
@@ -71,7 +70,6 @@
     "@types/node": "^22",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "cross-env": "^10.1.0",
     "postcss": "^8.5",
     "tailwindcss": "^4.1.9",
     "tsx": "^4.21.0",

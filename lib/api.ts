@@ -4,15 +4,13 @@ import matter from "gray-matter"
 import { directusClient } from './directus-client'
 import { transformDirectusProduct, inferProductCategory } from './types/directus'
 import {
-  getOutstaticDocuments,
   getLocalDocuments,
-  getOutstaticDocumentBySlug,
-  isOutstaticActive,
   isDirectusActive,
 } from './content-source'
 
 const reviewsDirectory = path.join(process.cwd(), "content/reviews")
 const guidesDirectory = path.join(process.cwd(), "content/guides")
+const pagesDirectory = path.join(process.cwd(), "content/pages")
 
 // Reviews API
 export interface ReviewFrontmatter {
@@ -97,6 +95,19 @@ export interface Guide {
   content: string
 }
 
+export interface PageFrontmatter {
+  title: string
+  description?: string
+  layout?: string
+  [key: string]: any
+}
+
+export interface PageContent {
+  slug: string
+  frontmatter: PageFrontmatter
+  content: string
+}
+
 export function getGuideSlugs(): string[] {
   if (!fs.existsSync(guidesDirectory)) {
     return []
@@ -155,6 +166,41 @@ export function getGuideCategories(): string[] {
     }
   })
   return Array.from(categories).sort()
+}
+
+// Pages API
+export function getPageSlugs(): string[] {
+  if (!fs.existsSync(pagesDirectory)) {
+    return []
+  }
+  return fs
+    .readdirSync(pagesDirectory)
+    .filter((file) => file.endsWith(".mdx"))
+    .map((file) => file.replace(/\.mdx$/, ""))
+}
+
+export function getPageBySlug(slug: string): PageContent | null {
+  const fullPath = path.join(pagesDirectory, `${slug}.mdx`)
+
+  if (!fs.existsSync(fullPath)) {
+    return null
+  }
+
+  const fileContents = fs.readFileSync(fullPath, "utf8")
+  const { data, content } = matter(fileContents)
+
+  return {
+    slug,
+    frontmatter: data as PageFrontmatter,
+    content,
+  }
+}
+
+export function getAllPages(): PageContent[] {
+  const slugs = getPageSlugs()
+  return slugs
+    .map((slug) => getPageBySlug(slug))
+    .filter((page): page is PageContent => page !== null)
 }
 
 /**
@@ -227,38 +273,14 @@ export async function getAllReviewsWithDirectus(): Promise<Review[]> {
 }
 
 /**
- * Get all guides from multiple sources (Outstatic > Local MDX)
- * Deduplicates by slug (Outstatic takes priority)
+ * Get all guides from local MDX
+ * Deduplicates by slug
  */
 export async function getAllGuidesUnified(): Promise<Guide[]> {
   const allGuides: Guide[] = []
   const seenSlugs = new Set<string>()
 
-  // 1. Get Outstatic guides (highest priority)
-  if (isOutstaticActive()) {
-    const ostGuides = getOutstaticDocuments('guides')
-    for (const guide of ostGuides) {
-      if (!seenSlugs.has(guide.slug)) {
-        seenSlugs.add(guide.slug)
-        allGuides.push({
-          slug: guide.slug,
-          frontmatter: {
-            title: guide.title,
-            date: guide.date,
-            description: guide.description,
-            category: guide.category,
-            tags: guide.tags || [],
-            image: guide.image,
-            readTime: guide.readTime,
-            updatedDate: guide.updatedDate,
-          },
-          content: guide.content || '',
-        })
-      }
-    }
-  }
-
-  // 2. Get local MDX guides
+  // 1. Get local MDX guides
   const localGuides = getLocalDocuments('guides')
   for (const guide of localGuides) {
     if (!seenSlugs.has(guide.slug)) {
@@ -291,7 +313,7 @@ export async function getAllGuidesUnified(): Promise<Guide[]> {
 }
 
 /**
- * Get all reviews from multiple sources (Outstatic > Local MDX > Directus)
+ * Get all reviews from multiple sources (Local MDX > Directus)
  * Deduplicates by slug and ASIN
  */
 export async function getAllReviewsUnified(): Promise<Review[]> {
@@ -299,36 +321,7 @@ export async function getAllReviewsUnified(): Promise<Review[]> {
   const seenSlugs = new Set<string>()
   const seenAsins = new Set<string>()
 
-  // 1. Get Outstatic reviews (highest priority)
-  if (isOutstaticActive()) {
-    const ostReviews = getOutstaticDocuments('reviews')
-    for (const review of ostReviews) {
-      if (!seenSlugs.has(review.slug)) {
-        seenSlugs.add(review.slug)
-        if (review.asin) seenAsins.add(review.asin)
-        allReviews.push({
-          slug: review.slug,
-          frontmatter: {
-            title: review.title,
-            date: review.date,
-            description: review.description,
-            updatedDate: review.updatedDate,
-            asin: review.asin,
-            brand: review.brand,
-            category: review.category,
-            rating: review.rating,
-            image: review.image,
-            amazonUrl: review.amazonUrl,
-            pros: review.pros || [],
-            cons: review.cons || [],
-          },
-          content: review.content || '',
-        })
-      }
-    }
-  }
-
-  // 2. Get local MDX reviews
+  // 1. Get local MDX reviews
   const localReviews = getLocalDocuments('reviews')
   for (const review of localReviews) {
     const asin = review.asin
@@ -356,7 +349,7 @@ export async function getAllReviewsUnified(): Promise<Review[]> {
     }
   }
 
-  // 3. Get Directus products (lowest priority)
+  // 2. Get Directus products (lowest priority)
   if (isDirectusActive()) {
     try {
       const products = await directusClient.getProducts({ limit: 100 })
@@ -401,28 +394,7 @@ export async function getAllReviewsUnified(): Promise<Review[]> {
  * Get a single guide by slug from multiple sources
  */
 export function getGuideBySlugUnified(slug: string): Guide | null {
-  // 1. Try Outstatic first
-  if (isOutstaticActive()) {
-    const ostGuide = getOutstaticDocumentBySlug('guides', slug)
-    if (ostGuide) {
-      return {
-        slug: ostGuide.slug,
-        frontmatter: {
-          title: ostGuide.title,
-          date: ostGuide.date,
-          description: ostGuide.description,
-          category: ostGuide.category,
-          tags: ostGuide.tags || [],
-          image: ostGuide.image,
-          readTime: ostGuide.readTime,
-          updatedDate: ostGuide.updatedDate,
-        },
-        content: ostGuide.content || '',
-      }
-    }
-  }
-
-  // 2. Fall back to local MDX
+  // Fall back to local MDX
   return getGuideBySlug(slug)
 }
 
@@ -430,31 +402,6 @@ export function getGuideBySlugUnified(slug: string): Guide | null {
  * Get a single review by slug from multiple sources
  */
 export function getReviewBySlugUnified(slug: string): Review | null {
-  // 1. Try Outstatic first
-  if (isOutstaticActive()) {
-    const ostReview = getOutstaticDocumentBySlug('reviews', slug)
-    if (ostReview) {
-      return {
-        slug: ostReview.slug,
-        frontmatter: {
-          title: ostReview.title,
-          date: ostReview.date,
-          description: ostReview.description,
-          updatedDate: ostReview.updatedDate,
-          asin: ostReview.asin,
-          brand: ostReview.brand,
-          category: ostReview.category,
-          rating: ostReview.rating,
-          image: ostReview.image,
-          amazonUrl: ostReview.amazonUrl,
-          pros: ostReview.pros || [],
-          cons: ostReview.cons || [],
-        },
-        content: ostReview.content || '',
-      }
-    }
-  }
-
-  // 2. Fall back to local MDX
+  // Fall back to local MDX
   return getReviewBySlug(slug)
 }

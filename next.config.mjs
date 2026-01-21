@@ -1,12 +1,9 @@
 /** @type {import('next').NextConfig} */
 
-const isStaticExport = process.env.NODE_ENV === "production" && process.env.OUTSTATIC_CMS_MODE !== "true"
-const isCmsMode = process.env.OUTSTATIC_CMS_MODE === "true"
+const isStaticExport = process.env.NODE_ENV === "production"
 
 const nextConfig = {
-  // Dual mode configuration:
-  // - CMS mode (OUTSTATIC_CMS_MODE=true): Enable API routes for Outstatic editor
-  // - Production mode: Static export for deployment
+  // Production mode: Static export for deployment
   ...(isStaticExport && { output: "export" }),
   typescript: {
     ignoreBuildErrors: true,
@@ -14,12 +11,7 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
-  // Transpile Outstatic and its dependencies for webpack compatibility
-  transpilePackages: ['outstatic', 'transliteration'],
-  // In CMS mode, include .cms.tsx files as pages
-  ...(isCmsMode && {
-    pageExtensions: ['tsx', 'ts', 'jsx', 'js', 'cms.tsx'],
-  }),
+  // Keep default page extensions.
 }
 
 export default nextConfig

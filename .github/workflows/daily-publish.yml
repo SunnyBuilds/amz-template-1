@@ -1,0 +1,47 @@
+name: Daily Publish (Guides)
+
+on:
+  schedule:
+    - cron: "10 2 * * *" # 10:10 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: publish-guides-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: draft
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Sync site config from Directus
+        run: node scripts/sync-site-config.js
+        env:
+          DIRECTUS_URL: ${{ secrets.DIRECTUS_URL }}
+          DIRECTUS_TOKEN: ${{ secrets.DIRECTUS_TOKEN }}
+          SITE_ID: ${{ secrets.SITE_ID }}
+
+      - name: Publish guides from Directus
+        run: node scripts/publish-posts.js
+        env:
+          DIRECTUS_URL: ${{ secrets.DIRECTUS_URL }}
+          DIRECTUS_TOKEN: ${{ secrets.DIRECTUS_TOKEN }}
+          SITE_ID: ${{ secrets.SITE_ID }}
+          DEFAULT_CATEGORY: "Buying Guides"
