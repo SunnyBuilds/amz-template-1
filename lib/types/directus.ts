@@ -15,7 +15,8 @@ export interface DirectusProduct {
     large: string
   } | null
   marketplace: string
-  site: string
+  site?: string | null
+  site_id?: number | null
   parent_asin: string | null
   browse_nodes: any[] | null
   status: 'new' | 'fetched' | 'failed'

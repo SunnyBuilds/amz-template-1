@@ -1,6 +1,6 @@
 import { siteConfig } from './site.config'
 import { directusClient } from './directus-client'
-import { transformDirectusProduct } from './types/directus'
+import { inferProductCategory, transformDirectusProduct } from './types/directus'
 
 export interface Product {
   asin: string
@@ -580,9 +580,10 @@ export async function getProductsData(): Promise<Product[]> {
       return productsDataFallback
     }
 
-    const products = directusProducts.map(dp =>
-      transformDirectusProduct(dp, 'Camp Essentials')
-    )
+    const products = directusProducts.map(dp => {
+      const category = inferProductCategory(dp.title, dp.category)
+      return transformDirectusProduct(dp, category)
+    })
 
     console.log(`Fetched ${products.length} products from Directus`)
     return products
