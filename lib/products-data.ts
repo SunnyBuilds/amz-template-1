@@ -1,6 +1,4 @@
 import { siteConfig } from './site.config'
-import { directusClient } from './directus-client'
-import { inferProductCategory, transformDirectusProduct } from './types/directus'
 
 export interface Product {
   asin: string
@@ -16,7 +14,7 @@ export interface Product {
   slug?: string // Added slug for review article URLs
 }
 
-// Fallback data - used when Directus is disabled or unavailable
+// Fallback data - kept in sync by the Directus -> GitHub workflow
 export const productsDataFallback: Product[] = [
   {
     asin: "B0D7QHY574",
@@ -560,37 +558,11 @@ export const productsDataFallback: Product[] = [
   },
 ]
 
-// Feature flag check
-const isDirectusEnabled = process.env.NEXT_PUBLIC_ENABLE_DIRECTUS === 'true'
-
 /**
- * Fetch products from Directus with fallback to local data
+ * Fetch products from local data (synced from Directus)
  */
 export async function getProductsData(): Promise<Product[]> {
-  if (!isDirectusEnabled) {
-    console.log('Directus disabled, using fallback data')
-    return productsDataFallback
-  }
-
-  try {
-    const directusProducts = await directusClient.getProducts({ limit: 50 })
-
-    if (directusProducts.length === 0) {
-      console.warn('No products from Directus, using fallback')
-      return productsDataFallback
-    }
-
-    const products = directusProducts.map(dp => {
-      const category = inferProductCategory(dp.title, dp.category)
-      return transformDirectusProduct(dp, category)
-    })
-
-    console.log(`Fetched ${products.length} products from Directus`)
-    return products
-  } catch (error) {
-    console.error('Failed to fetch from Directus, using fallback:', error)
-    return productsDataFallback
-  }
+  return productsDataFallback
 }
 
 // Backward compatible synchronous version (returns fallback)
@@ -622,17 +594,6 @@ export async function getProductsByCategory(categorySlug: string): Promise<Produ
 }
 
 export async function getProductByAsin(asin: string): Promise<Product | undefined> {
-  if (isDirectusEnabled) {
-    try {
-      const directusProduct = await directusClient.getProductByAsin(asin)
-      if (directusProduct) {
-        return transformDirectusProduct(directusProduct)
-      }
-    } catch (error) {
-      console.error(`Failed to fetch product ${asin} from Directus:`, error)
-    }
-  }
-
   const products = await getProductsData()
   return products.find((p) => p.asin === asin)
 }
